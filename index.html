@@ -83,7 +83,10 @@
   <div class="wrap narrow">
     <h2>Apply Now</h2>
     <p class="lead">Tell us about yourself and a recruiter will reach out within one business day.</p>
-    <form onsubmit="event.preventDefault(); this.reset(); document.getElementById('ok').hidden=false;">
+    <form id="applyForm" onsubmit="sendApplication(event)">
+      <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
+      <input type="hidden" name="_subject" value="New application - Texas Workforce Solutions">
+      <input type="hidden" name="_captcha" value="false">
       <div class="row">
         <label>First name<input required name="first"></label>
         <label>Last name<input required name="last"></label>
@@ -102,8 +105,9 @@
         </select>
       </label>
       <label>City<input name="city" placeholder="Houston, Dallas, Austin…"></label>
-      <button class="btn btn-dark" type="submit">Submit Application</button>
-      <p id="ok" class="ok" hidden>Thanks! This is a demo form, so nothing was sent.</p>
+      <button class="btn btn-dark" type="submit" id="applyBtn">Submit Application</button>
+      <p id="ok" class="ok" hidden>Thank you! Your application was received. A recruiter will contact you soon.</p>
+      <p id="err" class="err" hidden>Sorry, something went wrong. Please try again in a moment.</p>
     </form>
   </div>
 </section>
@@ -130,6 +134,22 @@
 </footer>
 
 <script>
+async function sendApplication(e){
+  e.preventDefault();
+  const f=e.target, btn=document.getElementById('applyBtn');
+  const ok=document.getElementById('ok'), err=document.getElementById('err');
+  ok.hidden=true; err.hidden=true; btn.disabled=true; btn.textContent='Sending...';
+  try{
+    const r=await fetch('https://formsubmit.co/ajax/septemcordia@gmail.com',{
+      method:'POST',
+      headers:{'Accept':'application/json'},
+      body:new FormData(f)
+    });
+    const d=await r.json();
+    if(r.ok && String(d.success)==='true'){ f.reset(); ok.hidden=false; } else { err.hidden=false; }
+  }catch(x){ err.hidden=false; }
+  btn.disabled=false; btn.textContent='Submit Application';
+}
 function toggleMenu(b){
   const n=document.getElementById('nav');
   const o=n.classList.toggle('open');
